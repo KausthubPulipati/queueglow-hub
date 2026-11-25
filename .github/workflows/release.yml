@@ -39,10 +39,12 @@ jobs:
       - name: Publish one complete release
         shell: pwsh
         run: |
-          $assets = Get-ChildItem release/installer -File | ForEach-Object { $_.FullName }
+          $assets = Get-ChildItem release/installer -File |
+            Where-Object { $_.Name -eq 'latest.yml' -or $_.Name -match '^QueueglowHub-Setup-.*\.exe(\.blockmap)?$' } |
+            ForEach-Object { $_.FullName }
           if (-not ($assets | Where-Object { $_ -like '*latest.yml' })) {
             throw 'electron-builder did not produce latest.yml.'
           }
-          gh release create "$env:GITHUB_REF_NAME" $assets --title "$env:GITHUB_REF_NAME" --generate-notes
+          gh release create "$env:GITHUB_REF_NAME" $assets --title "$env:GITHUB_REF_NAME" --notes "Queueglow Hub update. The installer updates existing installations in place."
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
