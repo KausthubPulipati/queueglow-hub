@@ -681,6 +681,27 @@ textarea:focus-visible {
   height: 100%;
   overflow: auto;
 }
+.list-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.list-page > .empty {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+}
+.list-page > .paged-items {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.list-page > .paged-items > .item-list {
+  flex: 1;
+}
 .action-row {
   display: flex;
   align-items: center;
@@ -700,8 +721,8 @@ textarea:focus-visible {
   height: 17px;
 }
 .item-list {
-  max-height: 265px;
-  overflow: auto;
+  max-height: 100%;
+  overflow: hidden;
 }
 .list-item {
   display: flex;
