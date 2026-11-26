@@ -302,17 +302,17 @@ textarea:focus-visible {
 .hero-clock {
   text-align: center;
   font-weight: 750;
-  font-size: 126px;
+  font-size: 90px;
   letter-spacing: -0.075em;
   line-height: 1;
   color: #fff;
   flex: 0 0 auto;
 }
 .hero-clock.clock-compact {
-  font-size: 108px;
+  font-size: 76px;
 }
 .hero-clock.clock-large {
-  font-size: 142px;
+  font-size: 104px;
 }
 .home-cards {
   display: grid;
@@ -322,7 +322,7 @@ textarea:focus-visible {
   padding-bottom: 4px;
 }
 .home-cards button {
-  height: 96px;
+  height: 82px;
   min-width: 0;
   position: relative;
   text-align: left;
@@ -375,8 +375,8 @@ textarea:focus-visible {
   top: 50%;
   transform: translateY(-50%);
   border-radius: 50%;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   background: white;
   color: #15231c;
   padding: 13px;
