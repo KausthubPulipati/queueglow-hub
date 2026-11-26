@@ -104,6 +104,7 @@ const initial = {
   focus: null,
   folded: true,
   motion: 'idle',
+  mail: null,
 };
 
 export default function App() {
@@ -216,9 +217,19 @@ export default function App() {
     );
   }, [state.settings?.reduceMotion, state.settings?.appAnimations]);
   useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 500);
-    return () => clearInterval(id);
-  }, []);
+    let timer;
+    const tick = () => {
+      const current = new Date();
+      setNow(current);
+      const needsSeconds = state.settings?.clockShowSeconds || Boolean(state.focus);
+      const delay = needsSeconds ? 1000 : 60_000 - (current.getTime() % 60_000) + 20;
+      timer = setTimeout(tick, delay);
+    };
+    const current = new Date();
+    const needsSeconds = state.settings?.clockShowSeconds || Boolean(state.focus);
+    timer = setTimeout(tick, needsSeconds ? 1000 : 60_000 - (current.getTime() % 60_000) + 20);
+    return () => clearTimeout(timer);
+  }, [state.settings?.clockShowSeconds, Boolean(state.focus)]);
   useEffect(() => {
     if (state.volume !== null) setVolumeDraft(state.volume);
   }, [state.volume]);
@@ -308,10 +319,12 @@ export default function App() {
   const islandAlpha = 1 - (state.settings?.islandTransparency || 0) / 100;
   return (
     <div
-      className={`shell theme-${page} skin-${state.settings?.wallpaperSync ? 'wallpaper' : state.settings?.islandSkin || 'obsidian'} indicator-${state.settings?.restingIndicator || 'eyes'} robo-${state.settings?.roboAppearance || 'cyan'} motion-${state.folded ? 'folded' : state.motion || 'idle'} material-${state.settings?.islandMaterial || 'black'} performance-${state.settings?.performanceMode || 'automatic'} ${state.settings?.appAnimations === false ? 'animations-off' : ''} ${state.settings?.islandMaterial === 'glass' && state.settings?.musicColor && currentArtwork ? 'music-color-on' : ''} ${state.settings?.roboBlinking === false ? 'eyes-still' : ''} ${state.settings?.roboDance && state.systemMedia?.playing ? 'robo-dancing' : ''}`}
+      className={`shell theme-${page} skin-${state.settings?.wallpaperSync ? 'wallpaper' : state.settings?.islandSkin || 'obsidian'} indicator-${state.settings?.restingIndicator || 'eyes'} robo-${state.settings?.roboAppearance || 'cyan'} motion-${state.folded ? 'folded' : state.motion || 'idle'} material-${state.settings?.islandMaterial || 'black'} performance-${state.settings?.performanceMode || 'automatic'} ${state.settings?.animationSpeed === 'fast' ? 'speed-fast' : ''} ${state.settings?.appAnimations === false ? 'animations-off' : ''} ${state.settings?.islandMaterial === 'glass' && state.settings?.musicColor && currentArtwork ? 'music-color-on' : ''} ${state.settings?.roboBlinking === false ? 'eyes-still' : ''} ${state.settings?.roboDance && state.systemMedia?.playing ? 'robo-dancing' : ''}`}
       style={{
         '--shell-alpha': islandAlpha,
         '--cover-art': currentArtwork ? `url("${currentArtwork}")` : 'none',
+        '--custom-accent': state.settings?.customAccent || '#84e1be',
+        '--clock-color': state.settings?.clockColor || '#ffffff',
         ...(state.wallpaperColor ? { '--wallpaper-accent': state.wallpaperColor } : {}),
       }}
       onMouseEnter={cancelFold}
@@ -361,7 +374,13 @@ export default function App() {
                 : `${state.system.batteryPercent}%`}
             </span>
           </button>
-          <span className={`time ${state.settings?.clockStyle === 'rounded' ? '' : 'mono'}`}>
+          <span
+            className={`time ${state.settings?.clockStyle === 'rounded' ? '' : 'mono'}`}
+            style={{
+              fontSize: `${state.settings?.clockHeaderSize || 17}px`,
+              color: 'var(--clock-color)',
+            }}
+          >
             {clock(now, state.settings)}
           </span>
           <button
@@ -449,6 +468,7 @@ export default function App() {
             state={state}
             remaining={remaining}
             navigate={navigate}
+            openUnread={() => window.hub.mailOpenUnread()}
             play={() => {
               navigate('music');
               if (activeTrack) setPlaying(true);
@@ -833,21 +853,57 @@ export default function App() {
         )}
         {page === 'mail' && (
           <section className="mail-page">
-            <div className="mail-heading">
-              <div>
-                <div className="eyebrow">MAIL</div>
-                <h1>Open Gmail</h1>
-              </div>
-              <div className="mail-actions">
-                <button className="soft-button" onClick={() => window.hub.openGmail()}>
-                  Open Gmail <ExternalLink size={12} />
-                </button>
-              </div>
-            </div>
-            <p className="mail-hint">
-              Your inbox opens in your browser. Queueglow does not sign in to, read, or store your
-              mail.
-            </p>
+            {(() => {
+              const mail = state.mail || { configured: false, connected: false };
+              return (
+                <>
+                  <div className="mail-heading">
+                    <div>
+                      <div className="eyebrow">GOOGLE MAIL</div>
+                      <h1>{mail.connected ? `${mail.unread ?? 0} unread` : 'Unread mail'}</h1>
+                    </div>
+                    <div className="mail-actions">
+                      {mail.connected ? (
+                        <>
+                          <button
+                            className="soft-button"
+                            onClick={() => window.hub.mailOpenUnread()}
+                          >
+                            Open unread <ExternalLink size={12} />
+                          </button>
+                          <button
+                            className="soft-button"
+                            onClick={() => window.hub.mailDisconnect()}
+                          >
+                            Disconnect
+                          </button>
+                        </>
+                      ) : mail.configured ? (
+                        <button
+                          className="soft-button"
+                          disabled={!mail.configured || mail.loading}
+                          onClick={() => window.hub.mailConnect().catch(() => {})}
+                        >
+                          {mail.loading ? 'Opening Google…' : 'Sign in with Google'}
+                        </button>
+                      ) : (
+                        <button className="soft-button" onClick={() => window.hub.mailOpenUnread()}>
+                          Open Gmail <ExternalLink size={12} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <p className="mail-hint">
+                    {mail.error ||
+                      (mail.connected
+                        ? 'Queueglow reads only the unread label count. Click the count on Home to open unread Gmail.'
+                        : mail.configured
+                          ? 'Sign in to show your unread Gmail count on Home. Queueglow does not read message content or change labels.'
+                          : 'Gmail opens in your browser. Queueglow does not sign in to or read your mail.')}
+                  </p>
+                </>
+              );
+            })()}
           </section>
         )}
         {page === 'all' && (
@@ -1400,11 +1456,15 @@ function AgendaPage({
     </section>
   );
 }
-function HomePage({ now, jobsToday, state, remaining, navigate, play }) {
+function HomePage({ now, jobsToday, state, remaining, navigate, openUnread, play }) {
   return (
     <section className="home-page">
       <div
         className={`hero-clock ${state.settings?.clockStyle === 'rounded' ? '' : 'mono'} clock-${state.settings?.clockSize || 'standard'}`}
+        style={{
+          '--home-clock-size': `${state.settings?.clockHomeSize || 92}px`,
+          color: 'var(--clock-color)',
+        }}
       >
         {clock(now, state.settings).replace(/\s?(AM|PM)$/i, '')}
       </div>
@@ -1441,6 +1501,25 @@ function HomePage({ now, jobsToday, state, remaining, navigate, play }) {
           <span className="card-number mono">{fmt(remaining)}</span>
           <span>{state.focus ? 'Focus in progress' : 'Focus, ready'}</span>
           <Play className="round-icon" size={18} />
+        </button>
+        <button
+          onClick={() =>
+            state.mail?.connected
+              ? openUnread()
+              : state.mail?.configured
+                ? navigate('mail')
+                : openUnread()
+          }
+        >
+          <span className="card-number mono">
+            {state.mail?.connected ? (state.mail.unread ?? 0) : '↗'}
+          </span>
+          <span>{state.mail?.connected ? 'unread emails' : 'Open Gmail'}</span>
+          {state.mail?.connected ? (
+            <ExternalLink className="round-icon" size={18} />
+          ) : (
+            <Mail className="round-icon" size={18} />
+          )}
         </button>
       </div>
     </section>
@@ -1567,3 +1646,4 @@ function AgentPage({ state, call, openSettings }) {
     </section>
   );
 }
+

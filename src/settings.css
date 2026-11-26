@@ -49,6 +49,26 @@ select:focus-visible {
   min-height: 100vh;
 }
 
+.color-row input[type='color'] {
+  width: 52px;
+  height: 38px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #17191d;
+}
+
+.activity-search {
+  width: min(100%, 330px);
+  margin: 0 0 12px auto;
+  display: block;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: inherit;
+  background: #17191d;
+}
+
 .sidebar {
   position: sticky;
   top: 0;
@@ -431,3 +451,4 @@ button.accent {
     gap: 10px;
   }
 }
+

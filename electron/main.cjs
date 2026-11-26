@@ -22,6 +22,7 @@ const { autoUpdater } = require('electron-updater');
 const { HubStore } = require('./store.cjs');
 const hooks = require('./hooks.cjs');
 const { MediaBridge } = require('./media.cjs');
+const { MailBridge } = require('./mail.cjs');
 const { discoverCli, chooseProvider, askCli, clipAnswer } = require('./robo-cli.cjs');
 const { DURATION_MS, IDLE_SECONDS, gaze } = require('./island-motion.cjs');
 const { wallpaperAccent } = require('./wallpaper.cjs');
@@ -60,6 +61,7 @@ let store,
   settingsWin,
   tray,
   mediaBridge,
+  mailBridge,
   folded = true,
   targetFolded = true,
   motion = 'idle',
@@ -155,6 +157,7 @@ function emit(extra = {}) {
       system: mediaBridge?.system || null,
       wallpaperColor: store.setting('wallpaperSync') ? wallpaperColor : null,
       roboCapabilities: roboCapabilities(),
+      mail: mailBridge?.state() || null,
       folded,
       motion,
       ...extra,
@@ -173,6 +176,7 @@ function current() {
     system: mediaBridge?.system || null,
     wallpaperColor: store.setting('wallpaperSync') ? wallpaperColor : null,
     roboCapabilities: roboCapabilities(),
+    mail: mailBridge?.state() || null,
     folded,
     motion,
   };
@@ -220,7 +224,7 @@ function resize(fold, snap = false) {
         motion = 'idle';
         emitMotion();
       },
-      store?.setting('animationSpeed') === 'fast' ? 520 : DURATION_MS,
+      store?.setting('animationSpeed') === 'fast' ? 460 : DURATION_MS,
     );
   }
   return { folded: fold, width: size.width, height: size.height };
@@ -701,9 +705,25 @@ function register() {
     }
   });
   ipcMain.handle('state', current);
+  ipcMain.handle('mail:state', (event) => {
+    if (event.sender !== win?.webContents) throw new Error('Invalid mail request');
+    return mailBridge.state();
+  });
+  ipcMain.handle('mail:connect', (event) => {
+    if (event.sender !== win?.webContents) throw new Error('Invalid mail request');
+    return mailBridge.connect();
+  });
+  ipcMain.handle('mail:disconnect', (event) => {
+    if (event.sender !== win?.webContents) throw new Error('Invalid mail request');
+    return mailBridge.disconnect();
+  });
+  ipcMain.handle('mail:refresh', (event) => {
+    if (event.sender !== win?.webContents) throw new Error('Invalid mail request');
+    return mailBridge.refresh();
+  });
   ipcMain.handle('mail:openGmail', (event) => {
     if (event.sender !== win?.webContents) throw new Error('Invalid mail request');
-    return shell.openExternal('https://mail.google.com/');
+    return shell.openExternal('https://mail.google.com/mail/u/0/#search/is%3Aunread');
   });
   ipcMain.handle('updates:state', () => updateState);
   ipcMain.handle('updates:check', async () => {
@@ -1070,6 +1090,21 @@ app.whenReady().then(() => {
   fs.mkdirSync(root, { recursive: true });
   removeLegacyGmailSession();
   store = new HubStore(root);
+  let googleClientId = '';
+  try {
+    googleClientId = JSON.parse(
+      fs.readFileSync(path.join(__dirname, '..', 'dist', 'queueglow-google-oauth.json'), 'utf8'),
+    ).clientId;
+  } catch {}
+  mailBridge = new MailBridge({
+    clientId: googleClientId,
+    file: path.join(root, 'google-mail-session.bin'),
+    safeStorage,
+    openExternal: (url) => shell.openExternal(url),
+    onChange: (mail) => emit({ mail }),
+  });
+  mailBridge.initialize().catch(() => {});
+  setInterval(() => mailBridge?.refresh().catch(() => {}), 5 * 60 * 1000);
   register();
   configureUpdater();
   try {
@@ -1111,3 +1146,4 @@ app.on('window-all-closed', () => {
   store?.close();
   app.quit();
 });
+

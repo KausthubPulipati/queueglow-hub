@@ -54,7 +54,11 @@ const hub = {
   roboAsk: (prompt, captureTarget) => invoke('roboAsk', prompt, captureTarget),
   roboTargets: () => invoke('roboTargets'),
   roboKey: (key) => invoke('roboKey', key),
-  openGmail: () => invoke('mail:openGmail'),
+  mailState: () => invoke('mail:state'),
+  mailConnect: () => invoke('mail:connect'),
+  mailDisconnect: () => invoke('mail:disconnect'),
+  mailRefresh: () => invoke('mail:refresh'),
+  mailOpenUnread: () => invoke('mail:openGmail'),
   updateState: () => invoke('updates:state'),
   checkForUpdates: () => invoke('updates:check'),
   downloadUpdate: () => invoke('updates:download'),
@@ -70,3 +74,4 @@ if (process.argv.includes('--queueglow-settings')) {
 } else {
   contextBridge.exposeInMainWorld('hub', hub);
 }
+

@@ -23,7 +23,7 @@ Queueglow stays out of the taskbar and is controlled from the tray menu.
 
 **Mail**
 
-- Opens Gmail in your default browser; Queueglow never accesses your inbox
+- Optional Google sign-in shows an unread Gmail count on Home and opens Gmail's unread view
 
 **Productivity**
 
@@ -55,11 +55,15 @@ Existing portable-folder users need to run the installer once to switch to the i
 
 ## Mail
 
-The Mail tab opens `https://mail.google.com/` in your default browser. Queueglow does not sign in to Google, request mailbox permissions, or read and store inbox data.
+The public build opens Gmail's unread view in your browser and does not sign in to or read mail. An optional desktop OAuth build can request the Gmail labels scope and read only the `UNREAD` label count; it does not fetch message content, change labels, or send Gmail data to a Queueglow server. OAuth tokens are encrypted with Windows secure storage. That sign-in remains unavailable to general users until the app has a publisher-owned verified domain and completes Google's production branding verification.
+
+To build the optional OAuth version for testing, set `QUEUEGLOW_GOOGLE_CLIENT_ID` to the public Desktop OAuth client ID. Queueglow Hub's Google consent screen is currently in Testing, so only accounts listed as test users can connect. General public sign-in requires moving the app to production and completing Google's branding/basic verification. Google requires a publicly accessible homepage and privacy policy hosted on a domain the publisher owns and has verified.
 
 ## Privacy
 
 Queueglow has no telemetry. Local data lives in `%LOCALAPPDATA%\Queueglow`.
+
+See the [Queueglow Hub Privacy Policy](PRIVACY.md) for details about Google account data.
 
 | Feature           | Default        | What leaves your PC                                                                                             |
 | ----------------- | -------------- | --------------------------------------------------------------------------------------------------------------- |
@@ -67,7 +71,7 @@ Queueglow has no telemetry. Local data lives in `%LOCALAPPDATA%\Queueglow`.
 | Online lyrics     | Off            | Track title and artist go to [LRCLIB](https://lrclib.net/docs) once enabled; results are cached for the session |
 | Robo              | Only on submit | Your question goes to the selected provider. An explicitly attached screen or window image is sent with it      |
 | OpenAI API key    | Optional       | Stored with Windows encryption                                                                                  |
-| Mail              | On click       | Gmail opens in your browser; Queueglow does not access your inbox                                               |
+| Mail              | Browser-only   | The public build opens Gmail in your browser; no mail data is accessed by Queueglow                             |
 
 ## Build from source
 
@@ -105,6 +109,7 @@ Additional tests:
 
 - **Memory use:** The Electron build is heavier than a native utility. A full island smoke test measured about 507 MB combined working set and 304 MB private bytes on the test PC. `QUEUEGLOW_SOFTWARE_RENDER=1` lowers GPU memory but may make animation less smooth.
 - **Not implemented:** Google Calendar, microphone input, and enforced app or site blocking.
+- **Mail setup:** The public build opens Gmail in the browser. The optional OAuth count is limited to the consent screen's test users until the publisher completes public OAuth setup and verification.
 - **Untested:** Robo image attachments are implemented but have not completed a live provider test.
 
 ## Contributing
@@ -114,3 +119,4 @@ Open an issue for reproducible bugs. Include your Windows version, display scale
 ## License
 
 MIT. See [LICENSE](LICENSE).
+

@@ -29,6 +29,8 @@ jobs:
 
       - name: Build renderer
         run: npm run build
+        env:
+          QUEUEGLOW_GOOGLE_CLIENT_ID: ${{ vars.QUEUEGLOW_GOOGLE_CLIENT_ID }}
 
       - name: Create installer and update metadata
         run: npx electron-builder --config scripts/electron-builder.config.cjs --win nsis --x64 --publish never
@@ -46,3 +48,4 @@ jobs:
           gh release create "$env:GITHUB_REF_NAME" $assets --title "$env:GITHUB_REF_NAME" --notes "Queueglow Hub update. The installer updates existing installations in place."
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

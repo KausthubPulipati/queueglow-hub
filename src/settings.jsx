@@ -26,7 +26,7 @@ const sections = [
   ['ai', 'AI & Chat', Sparkles],
   ['apps', 'Apps', LayoutGrid],
   ['robo', 'Robo', Bot],
-  ['wardrobe', 'Wardrobe', Shirt],
+  ['wardrobe', 'Themes', Shirt],
   ['account', 'Account', UserRound],
   ['general', 'General', SlidersHorizontal],
   ['notifications', 'Notifications', Bell],
@@ -151,6 +151,25 @@ function Range({ label, description, value, change, min = 0, max = 100, suffix =
   );
 }
 
+function ColorField({ label, description, value, change }) {
+  const id = useId();
+  return (
+    <label className="setting-row color-row" htmlFor={id}>
+      <span>
+        <strong>{label}</strong>
+        {description && <span className="row-description">{description}</span>}
+      </span>
+      <input
+        id={id}
+        type="color"
+        value={value}
+        onChange={(event) => change(event.target.value)}
+        aria-label={label}
+      />
+    </label>
+  );
+}
+
 function NameField({ value, change }) {
   const [draft, setDraft] = useState(value || 'Robo');
   useEffect(() => setDraft(value || 'Robo'), [value]);
@@ -174,7 +193,13 @@ function NameField({ value, change }) {
 }
 
 function Home({ activity, connections, navigate }) {
+  const [query, setQuery] = useState('');
   const linked = Object.values(connections).filter((value) => value === 'connected').length;
+  const events = activity.events.filter((event) =>
+    `${providerNames[event.provider] || 'Queueglow'} ${event.summary}`
+      .toLowerCase()
+      .includes(query.trim().toLowerCase()),
+  );
   return (
     <>
       <div className="summary-grid">
@@ -195,8 +220,16 @@ function Home({ activity, connections, navigate }) {
         </div>
       </div>
       <Group title="Recent activity">
-        {activity.events.length ? (
-          activity.events.map((event) => (
+        <input
+          className="activity-search"
+          type="search"
+          aria-label="Search recent activity"
+          placeholder="Search your activity"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+        />
+        {events.length ? (
+          events.map((event) => (
             <div className="activity-row" key={event.id}>
               <span className={'activity-mark ' + event.kind} />
               <div>
@@ -212,7 +245,11 @@ function Home({ activity, connections, navigate }) {
             </div>
           ))
         ) : (
-          <p className="empty">Activity will appear here after an agent sends its first event.</p>
+          <p className="empty">
+            {query
+              ? 'No activity matches your search.'
+              : 'Activity will appear here after an agent sends its first event.'}
+          </p>
         )}
       </Group>
     </>
@@ -513,6 +550,9 @@ function Preferences({ section, data, run }) {
             ['cyan', 'Cyan'],
             ['violet', 'Violet'],
             ['mint', 'Mint'],
+            ['amber', 'Amber'],
+            ['rose', 'Rose'],
+            ['blue', 'Blue'],
           ])}
         </Group>
         <Group title="Behavior">
@@ -611,7 +651,7 @@ function Preferences({ section, data, run }) {
   if (section === 'wardrobe')
     return (
       <>
-        <Group title="Island look">
+        <Group title="Island themes">
           {select('islandSkin', 'Island skin', [
             ['obsidian', 'Obsidian'],
             ['slate', 'Slate'],
@@ -621,39 +661,21 @@ function Preferences({ section, data, run }) {
             ['rose', 'Rosewood'],
             ['sunset', 'Sunset'],
             ['wallpaper', 'Wallpaper colors'],
+            ['custom', 'Custom color'],
           ])}
+          {settings.islandSkin === 'custom' && (
+            <ColorField
+              label="Custom island color"
+              description="Tint the island background with a color you choose."
+              value={settings.customAccent}
+              change={(value) => run(() => bridge.set('customAccent', value))}
+            />
+          )}
           {toggle(
             'wallpaperSync',
             'Sync with Windows wallpaper',
             'Sample the current wallpaper locally and tint the island. Refreshes every 10 minutes.',
           )}
-          {select('roboAppearance', 'Robo eyes', [
-            ['cyan', 'Cyan'],
-            ['violet', 'Violet'],
-            ['mint', 'Mint'],
-          ])}
-        </Group>
-        <Group title="Clock">
-          {select('clockFormat', 'Time format', [
-            ['12h', '12-hour'],
-            ['24h', '24-hour'],
-          ])}
-          {select('clockSize', 'Home clock size', [
-            ['compact', 'Compact'],
-            ['standard', 'Standard'],
-            ['large', 'Large'],
-          ])}
-          {select('clockStyle', 'Clock typography', [
-            ['digital', 'Digital mono'],
-            ['rounded', 'Rounded'],
-          ])}
-          {toggle('clockLeadingZero', 'Pad the hour', 'Show 09:30 instead of 9:30.')}
-          {toggle(
-            'clockShowSeconds',
-            'Show seconds',
-            'Add seconds to the top clock and home clock.',
-          )}
-          {toggle('showDate', 'Show date', 'Show the weekday and date in the island header.')}
         </Group>
       </>
     );
@@ -666,7 +688,7 @@ function Preferences({ section, data, run }) {
         />
         <Row
           title="Mail"
-          description="Queueglow opens Gmail in your browser and never accesses your inbox."
+          description="Optional Google sign-in shows an unread count only. Queueglow does not read message content or change labels."
         />
         <Row title="License" description="MIT open-source license." />
       </Group>
@@ -731,16 +753,6 @@ function Preferences({ section, data, run }) {
             ['standard', 'Standard'],
             ['large', 'Large'],
           ])}
-          {select('islandSkin', 'Skin', [
-            ['obsidian', 'Obsidian'],
-            ['slate', 'Slate'],
-            ['violet', 'Violet'],
-            ['glass', 'Floating glass'],
-            ['mint', 'Mint dusk'],
-            ['rose', 'Rosewood'],
-            ['sunset', 'Sunset'],
-            ['wallpaper', 'Wallpaper colors'],
-          ])}
           {select('islandStyle', 'Position', [
             ['attached', 'Attached to the top edge'],
             ['floating', 'Floating below the edge'],
@@ -751,9 +763,9 @@ function Preferences({ section, data, run }) {
           ])}
           <Range
             label="Transparency"
-            description="Adjust the island surface opacity."
+            description="0% is solid; higher values reveal more of your desktop."
             min={0}
-            max={40}
+            max={70}
             value={settings.islandTransparency}
             change={(value) => run(() => bridge.set('islandTransparency', value))}
             disabled={settings.islandMaterial !== 'glass'}
@@ -768,16 +780,52 @@ function Preferences({ section, data, run }) {
             'Show Wi-Fi and Bluetooth',
             'Keep the system status shortcut in the top bar.',
           )}
-          {toggle(
-            'wallpaperSync',
-            'Sync colors with wallpaper',
-            'Sample your current Windows wallpaper locally and adapt the island tint.',
-          )}
           {select('restingIndicator', 'When folded', [
             ['eyes', 'Eyes'],
             ['dot', 'Dot'],
             ['none', 'No indicator'],
           ])}
+        </Group>
+        <Group title="Clock">
+          {select('clockFormat', 'Time format', [
+            ['12h', '12-hour'],
+            ['24h', '24-hour'],
+          ])}
+          <Range
+            label="Island clock size"
+            description="Set the clock size in the top bar."
+            min={14}
+            max={28}
+            value={settings.clockHeaderSize}
+            suffix=" px"
+            change={(value) => run(() => bridge.set('clockHeaderSize', value))}
+          />
+          <Range
+            label="Home clock size"
+            description="Adjust the large clock independently from the island clock."
+            min={64}
+            max={176}
+            value={settings.clockHomeSize}
+            suffix=" px"
+            change={(value) => run(() => bridge.set('clockHomeSize', value))}
+          />
+          {select('clockStyle', 'Clock typography', [
+            ['digital', 'Digital mono'],
+            ['rounded', 'Rounded'],
+          ])}
+          <ColorField
+            label="Clock color"
+            description="Choose the color for both clocks."
+            value={settings.clockColor}
+            change={(value) => run(() => bridge.set('clockColor', value))}
+          />
+          {toggle('clockLeadingZero', 'Pad the hour', 'Show 09:30 instead of 9:30.')}
+          {toggle(
+            'clockShowSeconds',
+            'Show seconds',
+            'Add seconds to the top clock and home clock.',
+          )}
+          {toggle('showDate', 'Show date', 'Show the weekday and date in the island header.')}
         </Group>
         <Group title="Behavior">
           {select('islandExpansion', 'Open the island', [
@@ -825,7 +873,7 @@ const descriptions = {
   ai: 'Manage the account Robo uses to answer questions.',
   apps: 'Choose which apps and shortcuts are visible on the island.',
   robo: 'Adjust how Robo looks and handles screen context.',
-  wardrobe: 'Personalize the island colors and Robo eyes.',
+  wardrobe: 'Choose an island theme and set a custom accent color.',
   account: 'See how this local preview stores its settings.',
   general: 'Set Queueglow’s Windows, animation, and clipboard preferences.',
   notifications: 'Choose which agent events can show a Windows banner.',
@@ -959,3 +1007,4 @@ function SettingsApp() {
 }
 
 createRoot(document.getElementById('root')).render(<SettingsApp />);
+

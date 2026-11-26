@@ -120,9 +120,9 @@
   padding-right: 24px;
 }
 .hero-clock {
-  font-size: clamp(64px, 10.5vw, 84px);
+  font-size: var(--home-clock-size, clamp(64px, 10.5vw, 84px));
   line-height: 1;
-  letter-spacing: -6px;
+  letter-spacing: calc(var(--home-clock-size, 92px) * -0.055);
   flex: 0 0 auto;
 }
 .home-page {
@@ -485,7 +485,7 @@ html[data-eyes-sleep='true'] .eyes span {
 }
 .shell.material-glass.music-color-on::before {
   background-image:
-    linear-gradient(145deg, rgba(5, 9, 12, 0.68), rgba(9, 19, 22, 0.42)), var(--cover-art);
+    linear-gradient(145deg, rgba(5, 9, 12, 0.2), rgba(9, 19, 22, 0.08)), var(--cover-art);
   background-size: cover;
   background-position: center;
 }
@@ -534,6 +534,24 @@ html[data-eyes-sleep='true'] .eyes span {
 .shell.motion-folding .content,
 .shell.motion-folding .dock {
   animation: island-content-out 180ms ease-in both;
+}
+.shell.speed-fast.motion-expanding::before {
+  animation-duration: 390ms;
+  animation-delay: 45ms;
+}
+.shell.speed-fast.motion-folding::before {
+  animation-duration: 435ms;
+}
+.shell.speed-fast.motion-expanding .topbar,
+.shell.speed-fast.motion-expanding .content,
+.shell.speed-fast.motion-expanding .dock {
+  animation-duration: 230ms;
+  animation-delay: 185ms;
+}
+.shell.speed-fast.motion-folding .topbar,
+.shell.speed-fast.motion-folding .content,
+.shell.speed-fast.motion-folding .dock {
+  animation-duration: 150ms;
 }
 @keyframes island-grow {
   from {
@@ -1419,6 +1437,14 @@ html[data-reduce-motion='true'] .eyes span {
 .shell.skin-sunset {
   --island-surface: linear-gradient(150deg, #18100e, #39201a 55%, #6c3d2b);
 }
+.shell.skin-custom {
+  --island-surface: linear-gradient(
+    150deg,
+    color-mix(in srgb, var(--custom-accent) 12%, #080e11),
+    color-mix(in srgb, var(--custom-accent) 27%, #10191e) 56%,
+    color-mix(in srgb, var(--custom-accent) 42%, #15241f)
+  );
+}
 .shell.skin-wallpaper {
   --island-surface: linear-gradient(
     155deg,
@@ -1429,18 +1455,11 @@ html[data-reduce-motion='true'] .eyes span {
 }
 .shell.skin-glass {
   --island-surface: linear-gradient(135deg, #17231fd9 0%, #101a19cf 48%, #173a31d9 100%);
-  background: var(--island-surface);
-  backdrop-filter: blur(18px) saturate(125%);
-  -webkit-backdrop-filter: blur(18px) saturate(125%);
   border-color: #c1e6d32d;
 }
-.hero-clock.clock-compact {
-  font-size: 128px;
-  letter-spacing: -10px;
-}
-.hero-clock.clock-large {
-  font-size: 176px;
-  letter-spacing: -15px;
+.shell.skin-glass::before {
+  backdrop-filter: blur(18px) saturate(125%);
+  -webkit-backdrop-filter: blur(18px) saturate(125%);
 }
 .music-art-image {
   display: block;
@@ -1508,6 +1527,24 @@ html[data-reduce-motion='true'] .eyes span {
   box-shadow: 0 0 30px #b6a0ff99;
 }
 .shell.robo-mint .big-eyes span {
+  box-shadow: 0 0 30px #a1f3c999;
+}
+.shell.robo-amber .big-eyes span,
+.shell.robo-amber .island-notch .eyes span {
+  box-shadow: 0 0 30px #ffd36b99;
+}
+.shell.robo-rose .big-eyes span,
+.shell.robo-rose .island-notch .eyes span {
+  box-shadow: 0 0 30px #ff91c599;
+}
+.shell.robo-blue .big-eyes span,
+.shell.robo-blue .island-notch .eyes span {
+  box-shadow: 0 0 30px #80baff99;
+}
+.shell.robo-violet .island-notch .eyes span {
+  box-shadow: 0 0 30px #b6a0ff99;
+}
+.shell.robo-mint .island-notch .eyes span {
   box-shadow: 0 0 30px #a1f3c999;
 }
 .music-info .music-lyric {
@@ -1581,3 +1618,4 @@ html[data-reduce-motion='true'] .eyes span {
   padding: 6px 11px;
   font-size: 11px;
 }
+

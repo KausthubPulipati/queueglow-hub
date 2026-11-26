@@ -40,10 +40,14 @@ const SETTING_DEFAULTS = {
   musicColor: false,
   systemIndicators: true,
   islandSkin: 'obsidian',
+  customAccent: '#84e1be',
   wallpaperSync: false,
   clockFormat: '12h',
   clockShowSeconds: false,
   clockSize: 'standard',
+  clockHeaderSize: 17,
+  clockHomeSize: 92,
+  clockColor: '#ffffff',
   clockStyle: 'digital',
   clockLeadingZero: false,
   showDate: true,
@@ -69,13 +73,23 @@ const CHOICES = {
   islandSize: ['compact', 'standard', 'large'],
   islandStyle: ['attached', 'floating'],
   islandMaterial: ['black', 'glass'],
-  islandSkin: ['obsidian', 'slate', 'violet', 'glass', 'mint', 'rose', 'sunset', 'wallpaper'],
+  islandSkin: [
+    'obsidian',
+    'slate',
+    'violet',
+    'glass',
+    'mint',
+    'rose',
+    'sunset',
+    'wallpaper',
+    'custom',
+  ],
   clockFormat: ['12h', '24h'],
   clockSize: ['compact', 'standard', 'large'],
   clockStyle: ['digital', 'rounded'],
   islandExpansion: ['hover', 'click'],
   restingIndicator: ['eyes', 'dot', 'none'],
-  roboAppearance: ['cyan', 'violet', 'mint'],
+  roboAppearance: ['cyan', 'violet', 'mint', 'amber', 'rose', 'blue'],
   roboSleepAfter: ['30', '60', '120', 'never'],
   animationSpeed: ['fast', 'normal'],
   performanceMode: ['automatic', 'light', 'smooth', 'max'],
@@ -151,10 +165,16 @@ class HubStore {
     const valid = Object.hasOwn(CHOICES, key)
       ? CHOICES[key].includes(value)
       : key === 'islandTransparency'
-        ? Number.isInteger(value) && value >= 0 && value <= 40
-        : key === 'roboName'
-          ? typeof value === 'string' && value.trim().length > 0 && value.trim().length <= 24
-          : typeof value === 'boolean';
+        ? Number.isInteger(value) && value >= 0 && value <= 70
+        : key === 'clockHeaderSize'
+          ? Number.isInteger(value) && value >= 14 && value <= 28
+          : key === 'clockHomeSize'
+            ? Number.isInteger(value) && value >= 64 && value <= 176
+            : key === 'customAccent' || key === 'clockColor'
+              ? typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value)
+              : key === 'roboName'
+                ? typeof value === 'string' && value.trim().length > 0 && value.trim().length <= 24
+                : typeof value === 'boolean';
     if (!valid) throw new Error('Invalid setting');
     return this.writeSetting(key, value);
   }
@@ -462,3 +482,4 @@ class HubStore {
 }
 
 module.exports = { HubStore, APP_IDS, MAX_TRAY_FILE };
+
