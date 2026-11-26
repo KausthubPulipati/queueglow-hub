@@ -538,7 +538,6 @@ export default function App() {
         )}
         {page === 'music' && (
           <MusicPage
-            now={now}
             state={state}
             activeTrack={activeTrack}
             audio={audio}
@@ -1154,7 +1153,6 @@ function PagedText({ text }) {
   );
 }
 function MusicPage({
-  now,
   state,
   activeTrack,
   audio,
@@ -1167,6 +1165,12 @@ function MusicPage({
   call,
 }) {
   const system = state.systemMedia;
+  const [syncNow, setSyncNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!system?.playing) return undefined;
+    const timer = setInterval(() => setSyncNow(Date.now()), 100);
+    return () => clearInterval(timer);
+  }, [system?.playing]);
   const title = system?.title || activeTrack?.name || 'Your soundtrack starts here';
   const isPlaying = system ? system.playing : playing;
   const position = system
@@ -1175,15 +1179,13 @@ function MusicPage({
         Math.max(
           0,
           (system.position || 0) +
-            (isPlaying && system.sampledAt
-              ? Math.max(0, (now.getTime() - system.sampledAt) / 1000)
-              : 0),
+            (isPlaying && system.sampledAt ? Math.max(0, (syncNow - system.sampledAt) / 1000) : 0),
         ),
       )
     : 0;
   const lyricLines = system?.lyrics?.lines || [];
   const lyric = lyricLines.reduce(
-    (current, line) => (line.at <= position + 0.15 ? line.text : current),
+    (current, line) => (line.at <= position + 0.08 ? line.text : current),
     '',
   );
   const percent = system?.duration ? Math.min(100, (position / system.duration) * 100) : progress;
@@ -1213,7 +1215,7 @@ function MusicPage({
               : 'Add audio files or play music in another Windows app.'}
         </p>
         {lyric && (
-          <p className="music-lyric" aria-label="Current lyric">
+          <p className="music-lyric" aria-label="Current lyric" aria-live="off">
             {lyric}
           </p>
         )}

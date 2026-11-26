@@ -121,7 +121,7 @@ class LyricsClient {
   }
 
   async fetchLyrics(title, artist, duration) {
-    const query = new URLSearchParams({ track_name: title, artist_name: artist });
+    const query = new URLSearchParams({ track_name: simplifiedTitle(title), artist_name: artist });
     if (Number.isFinite(duration) && duration >= 1 && duration <= 3600)
       query.set('duration', String(Math.round(duration)));
     const response = await this.request(`https://lrclib.net/api/get?${query}`);
