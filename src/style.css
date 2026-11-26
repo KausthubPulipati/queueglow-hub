@@ -106,25 +106,13 @@ textarea:focus-visible {
   --page-mid: #171c23;
   --page-bottom: #30394c;
 }
-.shell.material-glass {
-  background: linear-gradient(
-    175deg,
-    rgba(8, 14, 18, var(--shell-alpha, 0.8)),
-    rgba(20, 39, 43, var(--shell-alpha, 0.8)) 58%,
-    rgba(30, 67, 57, var(--shell-alpha, 0.8))
-  );
-  backdrop-filter: blur(18px) saturate(1.25);
-}
-.shell.performance-light.material-glass {
-  backdrop-filter: blur(6px);
-}
-.shell.music-color-on {
+.shell.music-color-on::before {
   background-image:
     linear-gradient(180deg, rgba(5, 9, 12, 0.88), rgba(9, 19, 22, 0.7)), var(--cover-art);
   background-size: cover;
   background-position: center;
 }
-.shell.material-glass.music-color-on {
+.shell.material-glass.music-color-on::before {
   background-image:
     linear-gradient(
       180deg,
@@ -132,6 +120,8 @@ textarea:focus-visible {
       rgba(9, 19, 22, var(--shell-alpha, 0.8))
     ),
     var(--cover-art);
+  background-size: cover;
+  background-position: center;
 }
 .island-notch {
   position: absolute;
