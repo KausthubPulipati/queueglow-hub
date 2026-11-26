@@ -22,7 +22,6 @@ const { autoUpdater } = require('electron-updater');
 const { HubStore } = require('./store.cjs');
 const hooks = require('./hooks.cjs');
 const { MediaBridge } = require('./media.cjs');
-const { GmailBridge } = require('./gmail.cjs');
 const { discoverCli, chooseProvider, askCli, clipAnswer } = require('./robo-cli.cjs');
 const { DURATION_MS, IDLE_SECONDS, gaze } = require('./island-motion.cjs');
 const { wallpaperAccent } = require('./wallpaper.cjs');
@@ -33,12 +32,34 @@ const root =
   process.env.QUEUEGLOW_HOME ||
   path.join(process.env.LOCALAPPDATA || app.getPath('userData'), 'Queueglow');
 const ipcRoot = path.join(root, 'ipc');
+
+function removeLegacyGmailSession() {
+  const file = path.join(root, 'gmail-session.bin');
+  let token = '';
+  try {
+    if (safeStorage.isEncryptionAvailable()) {
+      const session = JSON.parse(safeStorage.decryptString(fs.readFileSync(file)));
+      token = String(session.refresh_token || session.access_token || '');
+    }
+  } catch {}
+  try {
+    fs.rmSync(file, { force: true });
+  } catch {}
+  if (token) {
+    void fetch('https://oauth2.googleapis.com/revoke', {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ token }),
+      signal: AbortSignal.timeout(8000),
+    }).catch(() => {});
+  }
+}
+
 let store,
   win,
   settingsWin,
   tray,
   mediaBridge,
-  gmailBridge,
   folded = true,
   targetFolded = true,
   motion = 'idle',
@@ -680,20 +701,9 @@ function register() {
     }
   });
   ipcMain.handle('state', current);
-  const gmailHandler = (name, action) =>
-    ipcMain.handle(`gmail:${name}`, async (event) => {
-      if (event.sender !== win?.webContents) throw new Error('Invalid Gmail request');
-      return action();
-    });
-  gmailHandler('state', () => gmailBridge.state());
-  gmailHandler('connect', () => gmailBridge.connect());
-  gmailHandler('refresh', () => gmailBridge.refresh());
-  gmailHandler('disconnect', () => gmailBridge.disconnect());
-  ipcMain.handle('gmail:open', (event, id) => {
-    if (event.sender !== win?.webContents) throw new Error('Invalid Gmail request');
-    if (typeof id !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(id))
-      throw new Error('Invalid Gmail message');
-    return shell.openExternal(`https://mail.google.com/mail/u/0/#all/${id}`);
+  ipcMain.handle('mail:openGmail', (event) => {
+    if (event.sender !== win?.webContents) throw new Error('Invalid mail request');
+    return shell.openExternal('https://mail.google.com/');
   });
   ipcMain.handle('updates:state', () => updateState);
   ipcMain.handle('updates:check', async () => {
@@ -1058,23 +1068,8 @@ async function askRoboOpenAI(prompt, screenshot) {
 }
 app.whenReady().then(() => {
   fs.mkdirSync(root, { recursive: true });
+  removeLegacyGmailSession();
   store = new HubStore(root);
-  let googleClientId = '';
-  try {
-    googleClientId = JSON.parse(
-      fs.readFileSync(path.join(__dirname, '..', 'dist', 'queueglow-google-oauth.json'), 'utf8'),
-    ).clientId;
-  } catch {}
-  gmailBridge = new GmailBridge({
-    clientId: googleClientId,
-    file: path.join(root, 'gmail-session.bin'),
-    safeStorage,
-    openExternal: (url) => shell.openExternal(url),
-    onChange: (state) => {
-      if (win && !win.isDestroyed()) win.webContents.send('gmailState', state);
-    },
-  });
-  gmailBridge.initialize().catch(() => {});
   register();
   configureUpdater();
   try {

@@ -118,14 +118,6 @@ export default function App() {
   const [error, setError] = useState(''),
     [success, setSuccess] = useState('');
   const [updateState, setUpdateState] = useState({ supported: false, status: 'idle', message: '' });
-  const [gmail, setGmail] = useState({
-    configured: false,
-    connected: false,
-    loading: false,
-    email: '',
-    messages: [],
-    error: '',
-  });
   const [duration, setDuration] = useState(25),
     [selectedMode, setSelectedMode] = useState('work');
   const [note, setNote] = useState(''),
@@ -183,14 +175,6 @@ export default function App() {
       }
     });
   }, []);
-  useEffect(() => window.hub.onGmail(setGmail), []);
-  useEffect(() => {
-    if (page === 'mail')
-      window.hub
-        .gmailState()
-        .then(setGmail)
-        .catch((e) => setGmail((s) => ({ ...s, error: e.message })));
-  }, [page]);
   useEffect(() => {
     window.hub
       .updateState()
@@ -851,69 +835,19 @@ export default function App() {
           <section className="mail-page">
             <div className="mail-heading">
               <div>
-                <div className="eyebrow">GOOGLE MAIL · READ ONLY</div>
-                <h1>{gmail.connected ? gmail.email : 'Mail at a glance'}</h1>
+                <div className="eyebrow">MAIL</div>
+                <h1>Open Gmail</h1>
               </div>
               <div className="mail-actions">
-                {gmail.connected ? (
-                  <>
-                    <button
-                      className="soft-button"
-                      onClick={() => window.hub.gmailRefresh()}
-                      disabled={gmail.loading}
-                    >
-                      {gmail.loading ? 'Refreshing…' : 'Refresh'}
-                    </button>
-                    <button
-                      className="soft-button"
-                      onClick={() => window.hub.gmailDisconnect()}
-                      disabled={gmail.loading}
-                    >
-                      Disconnect
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    className="soft-button"
-                    onClick={() =>
-                      window.hub
-                        .gmailConnect()
-                        .then(setGmail)
-                        .catch((e) => setGmail((s) => ({ ...s, loading: false, error: e.message })))
-                    }
-                    disabled={!gmail.configured || gmail.loading}
-                  >
-                    {gmail.loading ? 'Opening Google…' : 'Connect Google'}
-                  </button>
-                )}
+                <button className="soft-button" onClick={() => window.hub.openGmail()}>
+                  Open Gmail <ExternalLink size={12} />
+                </button>
               </div>
             </div>
-            {gmail.error && (
-              <p className="mail-error" role="alert">
-                {gmail.error}
-              </p>
-            )}
-            {!gmail.configured && (
-              <p className="mail-hint">
-                Gmail sign-in will be available when the app publisher finishes Google OAuth setup.
-              </p>
-            )}
-            {gmail.connected && gmail.messages.length === 0 && !gmail.loading && (
-              <p className="mail-hint">Your inbox is clear.</p>
-            )}
-            <div className="mail-list" aria-label="Recent inbox messages">
-              {gmail.messages.slice(0, 3).map((message) => (
-                <button
-                  key={message.id}
-                  className="mail-message"
-                  onClick={() => window.hub.gmailOpen(message.id)}
-                >
-                  <span className="mail-sender">{message.from || 'Unknown sender'}</span>
-                  <strong>{message.subject}</strong>
-                  <small>{message.snippet}</small>
-                </button>
-              ))}
-            </div>
+            <p className="mail-hint">
+              Your inbox opens in your browser. Queueglow does not sign in to, read, or store your
+              mail.
+            </p>
           </section>
         )}
         {page === 'all' && (

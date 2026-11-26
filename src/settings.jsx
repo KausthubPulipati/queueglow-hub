@@ -665,8 +665,8 @@ function Preferences({ section, data, run }) {
           description={`Independent desktop companion, version ${data.version}.`}
         />
         <Row
-          title="Sign-in"
-          description="Google inbox access is optional and read-only. Its token is encrypted and stored on this PC."
+          title="Mail"
+          description="Queueglow opens Gmail in your browser and never accesses your inbox."
         />
         <Row title="License" description="MIT open-source license." />
       </Group>
