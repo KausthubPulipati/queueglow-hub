@@ -49,6 +49,7 @@ let hoverArmed = false,
   outsideSince = 0,
   quitting = false;
 let motionTimer = null,
+  presenceTimer = null,
   lastPresence = '',
   lastPresenceAt = 0;
 let lastCursorPoint = null,
@@ -114,7 +115,13 @@ function islandInput(fold) {
 function bounds(width, height) {
   const display = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
   const area = display.workArea;
-  return { x: Math.round(area.x + (area.width - width) / 2), y: area.y, width, height };
+  const offset = store?.setting('islandStyle') === 'floating' ? 14 : 0;
+  return {
+    x: Math.round(area.x + (area.width - width) / 2),
+    y: area.y + offset,
+    width,
+    height,
+  };
 }
 function emit(extra = {}) {
   if (win && !win.isDestroyed())
@@ -181,16 +188,19 @@ function resize(fold, snap = false) {
       islandInput(false);
     }
     emitMotion();
-    motionTimer = setTimeout(() => {
-      motionTimer = null;
-      if (!win || win.isDestroyed()) return;
-      if (fold) {
-        islandInput(true);
-      }
-      folded = fold;
-      motion = 'idle';
-      emitMotion();
-    }, DURATION_MS);
+    motionTimer = setTimeout(
+      () => {
+        motionTimer = null;
+        if (!win || win.isDestroyed()) return;
+        if (fold) {
+          islandInput(true);
+        }
+        folded = fold;
+        motion = 'idle';
+        emitMotion();
+      },
+      store?.setting('animationSpeed') === 'fast' ? 520 : DURATION_MS,
+    );
   }
   return { folded: fold, width: size.width, height: size.height };
 }
@@ -240,16 +250,28 @@ function pollPresence() {
     lastCursorPoint = point;
     lastCursorMovementAt = Date.now();
   }
+  const configuredIdle = store.setting('roboSleepAfter');
+  const idleSeconds =
+    configuredIdle === 'never' ? Infinity : Number(configuredIdle) || IDLE_SECONDS;
   const sleeping =
-    powerMonitor.getSystemIdleTime() >= IDLE_SECONDS &&
-    Date.now() - lastCursorMovementAt >= IDLE_SECONDS * 1000;
-  const presence = gaze(point, win.getBounds(), sleeping);
+    powerMonitor.getSystemIdleTime() >= idleSeconds &&
+    Date.now() - lastCursorMovementAt >= idleSeconds * 1000;
+  const presence = store.setting('roboEyeTracking')
+    ? gaze(point, win.getBounds(), sleeping)
+    : { x: 0, y: 0, sleeping };
   const key = JSON.stringify(presence);
   if (key !== lastPresence || Date.now() - lastPresenceAt > 500) {
     win.webContents.send('presence', presence);
     lastPresence = key;
     lastPresenceAt = Date.now();
   }
+}
+
+function updatePresenceTimer() {
+  clearInterval(presenceTimer);
+  const cadence =
+    { automatic: 100, light: 250, smooth: 65, max: 33 }[store.setting('performanceMode')] || 100;
+  presenceTimer = setInterval(pollPresence, cadence);
 }
 
 function agentNotification(event) {
@@ -471,10 +493,10 @@ function openSettingsWindow(section = 'home') {
   }
   const next = new BrowserWindow({
     title: 'Queueglow Settings',
-    width: 940,
-    height: 710,
-    minWidth: 620,
-    minHeight: 520,
+    width: 1120,
+    height: 800,
+    minWidth: 760,
+    minHeight: 600,
     show: false,
     backgroundColor: '#111a20',
     autoHideMenuBar: true,
@@ -526,7 +548,8 @@ function setHubSetting(key, value) {
     if (value === 'wallpaper') refreshWallpaperColor();
   }
   if (key === 'clipboardEnabled' && value) lastClip = clipboard.readText();
-  if (key === 'islandSize') resetIslandBounds();
+  if (key === 'islandSize' || key === 'islandStyle') resetIslandBounds();
+  if (key === 'performanceMode') updatePresenceTimer();
   if ((key === 'islandSize' || key === 'islandExpansion') && targetFolded && motion === 'idle')
     islandInput(true);
   if (key === 'lyricsEnabled') mediaBridge?.setLyricsEnabled?.(value);
@@ -1071,7 +1094,7 @@ app.whenReady().then(() => {
   mediaBridge.setLyricsEnabled?.(store.setting('lyricsEnabled'));
   mediaBridge.start();
   setInterval(checkPointerExit, 100);
-  setInterval(pollPresence, 100);
+  updatePresenceTimer();
   setInterval(pollEvents, 700);
   pollEvents();
   setInterval(() => {

@@ -1,6 +1,6 @@
 {
   "name": "queueglow-hub",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "author": "Kausthub Pulipati",
   "license": "MIT",
   "description": "A local Windows desktop hub for focus, files, clips, music, and coding agents",

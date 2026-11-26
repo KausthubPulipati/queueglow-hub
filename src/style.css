@@ -34,33 +34,104 @@ textarea:focus-visible {
   font-family: var(--font-mono);
 }
 .shell {
+  --page-top: #060a0b;
+  --page-mid: #0d1517;
+  --page-bottom: #18392f;
   width: 100%;
   height: 100%;
   position: relative;
   overflow: hidden;
   border-radius: 0 0 40px 40px;
-  background: linear-gradient(178deg, #060a0b 0%, #0d1517 53%, #18392f 100%);
+  background: linear-gradient(
+    178deg,
+    var(--page-top) 0%,
+    var(--page-mid) 53%,
+    var(--page-bottom) 100%
+  );
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 18px 65px #000a;
 }
+.shell.theme-home {
+  --page-top: #07100e;
+  --page-mid: #101b1a;
+  --page-bottom: #1b4238;
+}
 .shell.theme-music {
-  background: linear-gradient(125deg, #182322, #070c0e 54%, #172f28);
+  --page-top: #101817;
+  --page-mid: #0a1214;
+  --page-bottom: #24483d;
 }
 .shell.theme-codex {
-  background: linear-gradient(180deg, #050809 3%, #111b1d 58%, #1d4036);
+  --page-top: #090c0e;
+  --page-mid: #141b20;
+  --page-bottom: #293946;
 }
-.shell.theme-focus,
+.shell.theme-focus {
+  --page-top: #0d100a;
+  --page-mid: #171d12;
+  --page-bottom: #3a4728;
+}
 .shell.theme-modes {
-  background: linear-gradient(175deg, #080b0b, #121b1b 55%, #364a28);
+  --page-top: #100e14;
+  --page-mid: #1c1722;
+  --page-bottom: #3f2b43;
 }
 .shell.theme-robo {
-  background: linear-gradient(175deg, #080a0c, #121b22 55%, #263e43);
+  --page-top: #080c10;
+  --page-mid: #121b22;
+  --page-bottom: #263e43;
 }
-.shell.theme-agenda,
-.shell.theme-note,
-.shell.theme-tray,
+.shell.theme-agenda {
+  --page-top: #090e16;
+  --page-mid: #131d2a;
+  --page-bottom: #2b4057;
+}
+.shell.theme-mail {
+  --page-top: #090f13;
+  --page-mid: #142129;
+  --page-bottom: #30434c;
+}
+.shell.theme-note {
+  --page-top: #100e0b;
+  --page-mid: #1c1914;
+  --page-bottom: #43372a;
+}
+.shell.theme-tray {
+  --page-top: #09110f;
+  --page-mid: #14211c;
+  --page-bottom: #294b3b;
+}
 .shell.theme-clips {
-  background: linear-gradient(175deg, #080b0c, #131b1c 56%, #273c36);
+  --page-top: #0d1014;
+  --page-mid: #171c23;
+  --page-bottom: #30394c;
+}
+.shell.material-glass {
+  background: linear-gradient(
+    175deg,
+    rgba(8, 14, 18, var(--shell-alpha, 0.8)),
+    rgba(20, 39, 43, var(--shell-alpha, 0.8)) 58%,
+    rgba(30, 67, 57, var(--shell-alpha, 0.8))
+  );
+  backdrop-filter: blur(18px) saturate(1.25);
+}
+.shell.performance-light.material-glass {
+  backdrop-filter: blur(6px);
+}
+.shell.music-color-on {
+  background-image:
+    linear-gradient(180deg, rgba(5, 9, 12, 0.88), rgba(9, 19, 22, 0.7)), var(--cover-art);
+  background-size: cover;
+  background-position: center;
+}
+.shell.material-glass.music-color-on {
+  background-image:
+    linear-gradient(
+      180deg,
+      rgba(5, 9, 12, var(--shell-alpha, 0.8)),
+      rgba(9, 19, 22, var(--shell-alpha, 0.8))
+    ),
+    var(--cover-art);
 }
 .island-notch {
   position: absolute;
@@ -87,6 +158,40 @@ textarea:focus-visible {
   background: white;
   border-radius: 50%;
   box-shadow: 0 0 11px #fff8;
+  animation: eyes-blink 7.2s ease-in-out infinite;
+}
+.eyes span:nth-child(2) {
+  animation-delay: 90ms;
+}
+@keyframes eyes-blink {
+  0%,
+  94%,
+  98%,
+  100% {
+    transform: scaleY(1);
+  }
+  96% {
+    transform: scaleY(0.08);
+  }
+}
+.eyes-still .eyes span {
+  animation: none !important;
+}
+.robo-dancing .island-notch .eyes {
+  animation: robo-bounce 720ms ease-in-out infinite alternate;
+}
+.shell.animations-off *,
+:root[data-reduce-motion='true'] .shell * {
+  animation: none !important;
+  transition: none !important;
+}
+@keyframes robo-bounce {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-3px);
+  }
 }
 .topbar {
   height: 64px;

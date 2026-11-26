@@ -227,8 +227,10 @@ export default function App() {
     [],
   );
   useEffect(() => {
-    document.documentElement.dataset.reduceMotion = String(!!state.settings?.reduceMotion);
-  }, [state.settings?.reduceMotion]);
+    document.documentElement.dataset.reduceMotion = String(
+      !!state.settings?.reduceMotion || state.settings?.appAnimations === false,
+    );
+  }, [state.settings?.reduceMotion, state.settings?.appAnimations]);
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 500);
     return () => clearInterval(id);
@@ -318,10 +320,16 @@ export default function App() {
     foldTimer.current = setTimeout(() => call(() => window.hub.fold()), 650);
   };
 
+  const currentArtwork = state.systemMedia?.artwork;
+  const islandAlpha = 1 - (state.settings?.islandTransparency || 0) / 100;
   return (
     <div
-      className={`shell theme-${page} skin-${state.settings?.wallpaperSync ? 'wallpaper' : state.settings?.islandSkin || 'obsidian'} indicator-${state.settings?.restingIndicator || 'eyes'} robo-${state.settings?.roboAppearance || 'cyan'} motion-${state.folded ? 'folded' : state.motion || 'idle'}`}
-      style={state.wallpaperColor ? { '--wallpaper-accent': state.wallpaperColor } : undefined}
+      className={`shell theme-${page} skin-${state.settings?.wallpaperSync ? 'wallpaper' : state.settings?.islandSkin || 'obsidian'} indicator-${state.settings?.restingIndicator || 'eyes'} robo-${state.settings?.roboAppearance || 'cyan'} motion-${state.folded ? 'folded' : state.motion || 'idle'} material-${state.settings?.islandMaterial || 'black'} performance-${state.settings?.performanceMode || 'automatic'} ${state.settings?.appAnimations === false ? 'animations-off' : ''} ${state.settings?.islandMaterial === 'glass' && state.settings?.musicColor && currentArtwork ? 'music-color-on' : ''} ${state.settings?.roboBlinking === false ? 'eyes-still' : ''} ${state.settings?.roboDance && state.systemMedia?.playing ? 'robo-dancing' : ''}`}
+      style={{
+        '--shell-alpha': islandAlpha,
+        '--cover-art': currentArtwork ? `url("${currentArtwork}")` : 'none',
+        ...(state.wallpaperColor ? { '--wallpaper-accent': state.wallpaperColor } : {}),
+      }}
       onMouseEnter={cancelFold}
       onMouseLeave={scheduleFold}
     >
@@ -337,16 +345,18 @@ export default function App() {
       </button>
       <header className="topbar">
         <div className="header-left">
-          <Connectivity
-            system={state.system}
-            open={connectivityOpen}
-            setOpen={setConnectivityOpen}
-            dismissOtherPanels={() => {
-              setMenu(false);
-              setVolumeOpen(false);
-            }}
-            call={call}
-          />
+          {state.settings?.systemIndicators !== false && (
+            <Connectivity
+              system={state.system}
+              open={connectivityOpen}
+              setOpen={setConnectivityOpen}
+              dismissOtherPanels={() => {
+                setMenu(false);
+                setVolumeOpen(false);
+              }}
+              call={call}
+            />
+          )}
           {state.settings?.showDate !== false && <span className="date mono">{day(now)}</span>}
         </div>
         <span className="topcenter">QUEUEGLOW</span>
@@ -465,7 +475,7 @@ export default function App() {
         {page === 'robo' && (
           <section className="robo-page">
             <div className="page-title">
-              Robo{' '}
+              {state.settings?.roboName || 'Robo'}{' '}
               <span className="subtle">
                 {state.roboCapabilities?.provider
                   ? `Using ${state.roboCapabilities.provider}`

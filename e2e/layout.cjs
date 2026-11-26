@@ -51,6 +51,8 @@ const { mainPage, hoverNotch, moveSystemCursor } = require('./window.cjs');
             page: section.className,
             excess: section.scrollHeight - section.clientHeight,
             scrollables,
+            background: getComputedStyle(document.querySelector('.shell'), '::before')
+              .backgroundImage,
           };
         }),
       );
@@ -74,6 +76,8 @@ const { mainPage, hoverNotch, moveSystemCursor } = require('./window.cjs');
                   el.scrollHeight > el.clientHeight + 2,
               )
               .map((el) => `${el.className}:${el.scrollHeight - el.clientHeight}`),
+            background: getComputedStyle(document.querySelector('.shell'), '::before')
+              .backgroundImage,
           };
         }),
       );
@@ -116,6 +120,9 @@ const { mainPage, hoverNotch, moveSystemCursor } = require('./window.cjs');
     if (trayOverflow > 2) throw new Error(`Loaded tray overflowed by ${trayOverflow}px`);
     if (results.some((result) => result.excess > 2 || result.scrollables.length))
       throw new Error(`Overflow: ${JSON.stringify(results)}`);
+    const pageStates = results.slice(0, names.length);
+    if (new Set(pageStates.map((result) => result.background)).size !== names.length)
+      throw new Error('Each app destination must render its own page-specific visual state');
     console.log(JSON.stringify(results, null, 2));
   } finally {
     await app.close();

@@ -124,6 +124,55 @@ function Select({ label, description, value, change, options, disabled }) {
   );
 }
 
+function Range({ label, description, value, change, min = 0, max = 100, suffix = '%', disabled }) {
+  const id = useId();
+  return (
+    <label className="setting-row range-row" htmlFor={id}>
+      <span>
+        <strong>{label}</strong>
+        {description && <span className="row-description">{description}</span>}
+      </span>
+      <span className="range-control">
+        <input
+          id={id}
+          type="range"
+          min={min}
+          max={max}
+          value={value}
+          onChange={(event) => change(Number(event.target.value))}
+          disabled={disabled}
+        />
+        <output htmlFor={id}>
+          {value}
+          {suffix}
+        </output>
+      </span>
+    </label>
+  );
+}
+
+function NameField({ value, change }) {
+  const [draft, setDraft] = useState(value || 'Robo');
+  useEffect(() => setDraft(value || 'Robo'), [value]);
+  return (
+    <label className="setting-row">
+      <span>
+        <strong>Companion name</strong>
+        <span className="row-description">Shown on the assistant page.</span>
+      </span>
+      <input
+        className="inline-input"
+        value={draft}
+        maxLength={24}
+        onChange={(event) => setDraft(event.target.value)}
+        onBlur={() => change(draft.trim() || 'Robo')}
+        onKeyDown={(event) => event.key === 'Enter' && event.currentTarget.blur()}
+        aria-label="Companion name"
+      />
+    </label>
+  );
+}
+
 function Home({ activity, connections, navigate }) {
   const linked = Object.values(connections).filter((value) => value === 'connected').length;
   return (
@@ -453,11 +502,36 @@ function Preferences({ section, data, run }) {
   if (section === 'robo')
     return (
       <>
+        <Group title="Identity">
+          <NameField
+            value={settings.roboName}
+            change={(value) => run(() => bridge.set('roboName', value))}
+          />
+        </Group>
         <Group title="Appearance">
           {select('roboAppearance', 'Accent color', [
             ['cyan', 'Cyan'],
             ['violet', 'Violet'],
             ['mint', 'Mint'],
+          ])}
+        </Group>
+        <Group title="Behavior">
+          {toggle(
+            'roboEyeTracking',
+            'Follow nearby pointer',
+            'Let the eyes glance toward your cursor.',
+          )}
+          {toggle(
+            'roboBlinking',
+            'Natural blinking',
+            'Use a subtle periodic blink while Queueglow is open.',
+          )}
+          {toggle('roboDance', 'React to music', 'Add a small motion while music is playing.')}
+          {select('roboSleepAfter', 'Rest after inactivity', [
+            ['30', '30 seconds'],
+            ['60', '1 minute'],
+            ['120', '2 minutes'],
+            ['never', 'Stay awake'],
           ])}
         </Group>
         <Group title="Screen context">
@@ -472,6 +546,28 @@ function Preferences({ section, data, run }) {
   if (section === 'general')
     return (
       <>
+        <Group title="Motion and performance">
+          {select('animationSpeed', 'Island transition', [
+            ['fast', 'Fast'],
+            ['normal', 'Normal'],
+          ])}
+          {select(
+            'performanceMode',
+            'Pointer response',
+            [
+              ['automatic', 'Automatic'],
+              ['light', 'Light'],
+              ['smooth', 'Smooth'],
+              ['max', 'Maximum'],
+            ],
+            'Controls how often the island updates Robo’s eye position.',
+          )}
+          {toggle(
+            'appAnimations',
+            'Interface animations',
+            'Reduce motion to make the app feel calmer.',
+          )}
+        </Group>
         <Group title="Windows">
           <Select
             label="Global island shortcut"
@@ -645,6 +741,33 @@ function Preferences({ section, data, run }) {
             ['sunset', 'Sunset'],
             ['wallpaper', 'Wallpaper colors'],
           ])}
+          {select('islandStyle', 'Position', [
+            ['attached', 'Attached to the top edge'],
+            ['floating', 'Floating below the edge'],
+          ])}
+          {select('islandMaterial', 'Surface', [
+            ['black', 'Opaque'],
+            ['glass', 'Frosted glass'],
+          ])}
+          <Range
+            label="Transparency"
+            description="Adjust the island surface opacity."
+            min={0}
+            max={40}
+            value={settings.islandTransparency}
+            change={(value) => run(() => bridge.set('islandTransparency', value))}
+            disabled={settings.islandMaterial !== 'glass'}
+          />
+          {toggle(
+            'musicColor',
+            'Tint with current album art',
+            'Use this when the island surface is set to frosted glass.',
+          )}
+          {toggle(
+            'systemIndicators',
+            'Show Wi-Fi and Bluetooth',
+            'Keep the system status shortcut in the top bar.',
+          )}
           {toggle(
             'wallpaperSync',
             'Sync colors with wallpaper',
@@ -666,6 +789,18 @@ function Preferences({ section, data, run }) {
             'Synced lyrics',
             'Queueglow sends the current track title and artist to LRCLIB to find synced lyrics.',
           )}
+          <Row
+            title="Word-by-word highlight"
+            description="This lyrics source provides line timestamps, not word timings."
+          >
+            <span className="status">Line sync available</span>
+          </Row>
+          <Row
+            title="Weather and calendar cards"
+            description="Weather lookup and calendar feed sync are not connected in this build."
+          >
+            <span className="status">Not connected</span>
+          </Row>
         </Group>
       </>
     );

@@ -29,6 +29,21 @@ const { moveSystemCursor } = require('./window.cjs');
     const settings = await settingsPromise;
     settings.setDefaultTimeout(10000);
     await settings.getByRole('heading', { name: 'Connections', exact: true }).waitFor();
+    const proportions = await settings.evaluate(() => {
+      const shell = document.querySelector('.settings-shell');
+      const main = document.querySelector('main');
+      const content = document.querySelector('.content');
+      const header = content.querySelector('header');
+      return {
+        sidebar: parseFloat(getComputedStyle(shell).gridTemplateColumns),
+        main: main.getBoundingClientRect().width,
+        content: content.getBoundingClientRect().width,
+        header: header.getBoundingClientRect().width,
+      };
+    });
+    assert.equal(proportions.sidebar, 232);
+    assert.ok(proportions.content >= proportions.main - 2, JSON.stringify(proportions));
+    assert.ok(proportions.header >= proportions.main - 2, JSON.stringify(proportions));
     await settings.screenshot({
       path: path.resolve(__dirname, '..', 'screenshot-settings-connections.png'),
     });

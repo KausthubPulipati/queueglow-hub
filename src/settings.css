@@ -45,7 +45,7 @@ select:focus-visible {
 
 .settings-shell {
   display: grid;
-  grid-template-columns: 202px minmax(0, 1fr);
+  grid-template-columns: 232px minmax(0, 1fr);
   min-height: 100vh;
 }
 
@@ -111,12 +111,21 @@ main {
   background: radial-gradient(ellipse at 100% 0%, #182d31 0%, #111a20 58%);
 }
 .content {
-  width: min(100%, 800px);
+  width: min(100%, 1320px);
   margin: auto;
   padding: 37px 40px 45px;
 }
 header {
-  margin-bottom: 26px;
+  min-height: 112px;
+  margin: -37px -40px 26px;
+  padding: 24px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse at 6% 110%, rgba(105, 194, 155, 0.25), transparent 50%),
+    linear-gradient(100deg, #15231f, #142127 56%, #1d2630);
+  border-bottom: 1px solid #30443d;
 }
 h1 {
   font-size: 35px;
@@ -201,6 +210,32 @@ fieldset {
 }
 .setting-row select {
   max-width: 50%;
+}
+.inline-input {
+  width: min(42%, 260px);
+  min-width: 150px;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid #405258;
+  border-radius: 7px;
+  background: #111d22;
+  color: #eaf3f4;
+}
+.range-control {
+  display: flex;
+  flex: 0 1 300px;
+  align-items: center;
+  gap: 12px;
+}
+.range-control input {
+  width: 100%;
+  accent-color: var(--accent);
+}
+.range-control output {
+  min-width: 42px;
+  color: var(--soft);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 .entry-form {
   flex-wrap: wrap;
@@ -386,6 +421,10 @@ button.accent {
     padding-inline: 9px;
   }
   .content {
+    padding-inline: 22px;
+  }
+  .content > header {
+    margin-inline: -22px;
     padding-inline: 22px;
   }
   .setting-row {

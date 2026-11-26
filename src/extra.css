@@ -449,30 +449,16 @@ html[data-eyes-sleep='true'] .eyes span {
   opacity: 0.72;
 }
 .shell {
-  --island-surface: linear-gradient(178deg, #060a0b 0%, #0d1517 53%, #18392f 100%);
+  --island-surface: linear-gradient(
+    178deg,
+    var(--page-top) 0%,
+    var(--page-mid) 53%,
+    var(--page-bottom) 100%
+  );
   background: transparent !important;
   border: 0;
   box-shadow: none;
   isolation: isolate;
-}
-.shell.theme-music {
-  --island-surface: linear-gradient(125deg, #182322, #070c0e 54%, #172f28);
-}
-.shell.theme-codex {
-  --island-surface: linear-gradient(180deg, #050809 3%, #111b1d 58%, #1d4036);
-}
-.shell.theme-focus,
-.shell.theme-modes {
-  --island-surface: linear-gradient(175deg, #080b0b, #121b1b 55%, #364a28);
-}
-.shell.theme-robo {
-  --island-surface: linear-gradient(175deg, #080a0c, #121b22 55%, #263e43);
-}
-.shell.theme-agenda,
-.shell.theme-note,
-.shell.theme-tray,
-.shell.theme-clips {
-  --island-surface: linear-gradient(175deg, #080b0c, #131b1c 56%, #273c36);
 }
 .shell::before {
   content: '';
@@ -669,29 +655,31 @@ html[data-reduce-motion='true'] .eyes span {
   font-size: 12px;
 }
 .modes-page .page-title {
-  margin: 0 0 5px;
+  margin: 0 0 2px;
+  font-size: 20px;
 }
 .modes-page .mode-grid {
-  margin-top: 0;
-  gap: 8px;
+  margin: 0 0 3px;
+  gap: 6px;
 }
 .modes-page .mode-card {
-  height: 88px;
-  padding: 10px;
-  gap: 2px;
-  border-radius: 16px;
+  height: 52px;
+  padding: 6px;
+  gap: 1px;
+  border-radius: 12px;
 }
 .modes-page .mode-card strong {
-  font-size: 17px;
+  font-size: 14px;
 }
 .modes-page .mode-card small {
-  font-size: 10px;
+  font-size: 8px;
+  line-height: 1;
 }
 .mode-preferences {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 7px;
-  margin-top: 8px;
+  gap: 4px;
+  margin: 4px 0;
 }
 .mode-preferences label {
   display: flex;
@@ -699,23 +687,26 @@ html[data-reduce-motion='true'] .eyes span {
   justify-content: space-between;
   gap: 5px;
   min-width: 0;
-  padding: 6px 8px;
+  padding: 4px 6px;
   border: 1px solid #ffffff17;
   border-radius: 9px;
   color: #c8d6d0;
-  font-size: 10px;
+  font-size: 9px;
 }
 .mode-preferences input {
   flex: none;
   accent-color: #8adfc0;
 }
 .modes-page .mode-options {
-  margin: 5px 0 8px;
-  font-size: 9px;
+  margin: 1px 0 2px;
+  font-size: 8px;
+}
+.modes-page .mode-options .muted {
+  line-height: 1.15;
 }
 .modes-page .primary-button {
-  padding: 5px 12px;
-  font-size: 11px;
+  padding: 4px 10px;
+  font-size: 10px;
 }
 .agent-empty {
   min-height: 0;

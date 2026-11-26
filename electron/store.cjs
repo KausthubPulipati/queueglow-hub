@@ -34,6 +34,11 @@ const SETTING_DEFAULTS = {
   globalHotkey: 'Control+Alt+Q',
   focusGuard: false,
   islandSize: 'standard',
+  islandStyle: 'attached',
+  islandMaterial: 'black',
+  islandTransparency: 20,
+  musicColor: false,
+  systemIndicators: true,
   islandSkin: 'obsidian',
   wallpaperSync: false,
   clockFormat: '12h',
@@ -45,15 +50,25 @@ const SETTING_DEFAULTS = {
   islandExpansion: 'hover',
   restingIndicator: 'eyes',
   roboAppearance: 'cyan',
+  roboName: 'Robo',
+  roboEyeTracking: true,
+  roboBlinking: true,
+  roboDance: false,
+  roboSleepAfter: '30',
   roboScreenCapture: true,
   roboProvider: 'auto',
   lyricsEnabled: false,
+  animationSpeed: 'normal',
+  performanceMode: 'automatic',
+  appAnimations: true,
   customShortcuts: [null, null, null, null],
 };
 const CHOICES = {
   globalHotkey: ['Control+Alt+Q', 'Control+Alt+Space', 'Control+Shift+Q', 'disabled'],
   notificationPresentation: ['summary', 'private'],
   islandSize: ['compact', 'standard', 'large'],
+  islandStyle: ['attached', 'floating'],
+  islandMaterial: ['black', 'glass'],
   islandSkin: ['obsidian', 'slate', 'violet', 'glass', 'mint', 'rose', 'sunset', 'wallpaper'],
   clockFormat: ['12h', '24h'],
   clockSize: ['compact', 'standard', 'large'],
@@ -61,6 +76,9 @@ const CHOICES = {
   islandExpansion: ['hover', 'click'],
   restingIndicator: ['eyes', 'dot', 'none'],
   roboAppearance: ['cyan', 'violet', 'mint'],
+  roboSleepAfter: ['30', '60', '120', 'never'],
+  animationSpeed: ['fast', 'normal'],
+  performanceMode: ['automatic', 'light', 'smooth', 'max'],
   roboProvider: ['auto', 'codex', 'claude', 'openai'],
 };
 const MAX_TRAY_FILE = 25 * 1024 * 1024;
@@ -132,7 +150,11 @@ class HubStore {
       throw new Error('Invalid setting');
     const valid = Object.hasOwn(CHOICES, key)
       ? CHOICES[key].includes(value)
-      : typeof value === 'boolean';
+      : key === 'islandTransparency'
+        ? Number.isInteger(value) && value >= 0 && value <= 40
+        : key === 'roboName'
+          ? typeof value === 'string' && value.trim().length > 0 && value.trim().length <= 24
+          : typeof value === 'boolean';
     if (!valid) throw new Error('Invalid setting');
     return this.writeSetting(key, value);
   }
