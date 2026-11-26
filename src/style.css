@@ -293,34 +293,44 @@ textarea:focus-visible {
 }
 .home-page {
   height: 100%;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  padding: 4px 0 2px;
 }
 .hero-clock {
   text-align: center;
   font-weight: 750;
-  font-size: 158px;
-  letter-spacing: -13px;
-  line-height: 1.25;
+  font-size: 126px;
+  letter-spacing: -0.075em;
+  line-height: 1;
   color: #fff;
+  flex: 0 0 auto;
+}
+.hero-clock.clock-compact {
+  font-size: 108px;
+}
+.hero-clock.clock-large {
+  font-size: 142px;
 }
 .home-cards {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  padding-bottom: 22px;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.2fr) minmax(0, 0.9fr);
+  align-items: stretch;
+  gap: 12px;
+  padding-bottom: 4px;
 }
 .home-cards button {
-  height: 128px;
+  height: 96px;
   min-width: 0;
   position: relative;
   text-align: left;
   display: flex;
   align-items: center;
-  gap: 15px;
-  padding: 22px;
-  border-radius: 31px;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 23px;
   border: 1px solid #ffffff38;
   background: #08100dc4;
   color: white;
@@ -334,35 +344,39 @@ textarea:focus-visible {
   gap: 0;
 }
 .home-cards button > span:not(.card-number) {
-  font-size: 20px;
+  font-size: 16px;
   color: #bdc8c1;
 }
 .home-cards .card-number {
-  font-size: 34px;
+  font-size: 29px;
   font-weight: 700;
   color: #fff;
 }
 .home-cards strong {
   display: block;
-  font-size: 22px;
+  font-size: 18px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 200px;
+  max-width: 100%;
 }
 .home-cards small {
   display: block;
   margin-top: 4px;
   color: #b7c6bc;
-  font-size: 16px;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .round-icon {
   position: absolute;
-  right: 19px;
-  top: 43px;
+  right: 13px;
+  top: 50%;
+  transform: translateY(-50%);
   border-radius: 50%;
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
   background: white;
   color: #15231c;
   padding: 13px;
@@ -632,13 +646,25 @@ textarea:focus-visible {
 }
 .modes-page .mode-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 15px;
-  margin-top: 20px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 12px;
+}
+.modes-page {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.modes-page .page-title {
+  font-size: 24px;
+  margin: 4px 0 10px;
 }
 .mode-card {
-  height: 128px;
-  border-radius: 24px;
+  height: 88px;
+  min-width: 0;
+  border-radius: 18px;
   border: 1px solid #718e77;
   background: #102018bb;
   color: white;
@@ -646,8 +672,8 @@ textarea:focus-visible {
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
-  padding: 20px;
-  gap: 6px;
+  padding: 11px;
+  gap: 4px;
   text-align: left;
 }
 .mode-card.active {
@@ -655,23 +681,61 @@ textarea:focus-visible {
   border-color: #a6e3bc;
 }
 .mode-card strong {
-  font-size: 24px;
+  max-width: 100%;
+  font-size: 18px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .mode-card small {
   color: #c6d8c9;
+  font-size: 12px;
+  white-space: nowrap;
 }
 .mode-dot {
-  width: 14px;
-  height: 14px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: #a8e3ba;
 }
 .mode-options {
+  margin: 0 0 10px;
+  width: auto;
+}
+.mode-options .muted {
+  display: block;
+  font-size: 12px;
+  line-height: 1.35;
+}
+.mode-preferences {
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 12px;
-  margin: 20px 0;
-  width: 380px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.mode-preferences label {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 11px;
+  border: 1px solid #ffffff28;
+  border-radius: 14px;
+  background: #07100eb3;
+  color: #e5eee8;
+  font-size: 13px;
+}
+.mode-preferences input {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+}
+.modes-page > .primary-button {
+  align-self: flex-start;
+  padding: 10px 16px;
+  margin-top: auto;
 }
 .list-page,
 .note-page,
