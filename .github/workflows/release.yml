@@ -2,6 +2,8 @@ name: Windows release
 
 on:
   push:
+    branches:
+      - main
     tags:
       - 'v*'
 
@@ -45,7 +47,18 @@ jobs:
           if (-not ($assets | Where-Object { $_ -like '*latest.yml' })) {
             throw 'electron-builder did not produce latest.yml.'
           }
-          gh release create "$env:GITHUB_REF_NAME" $assets --title "$env:GITHUB_REF_NAME" --notes "Queueglow Hub update. The installer updates existing installations in place."
+          $packageVersion = node -p "require('./package.json').version"
+          $releaseTag = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME } else { "v$packageVersion" }
+          gh release view $releaseTag *> $null
+          if ($LASTEXITCODE -eq 0) {
+            if ($env:GITHUB_REF_TYPE -eq 'tag') {
+              gh release upload $releaseTag $assets --clobber
+            } else {
+              Write-Host "Release $releaseTag already exists. Bump package.json to publish a new build."
+            }
+          } else {
+            gh release create $releaseTag $assets --title $releaseTag --notes "Queueglow Hub update. The installer updates existing installations in place."
+          }
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
